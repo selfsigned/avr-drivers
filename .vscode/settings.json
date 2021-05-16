@@ -1,0 +1,4 @@
+{
+    // Use clang-format
+    "editor.formatOnSave": true,
+}
