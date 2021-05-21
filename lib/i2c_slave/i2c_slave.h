@@ -22,21 +22,28 @@
 #ifndef I2C_SLAVE_H
 #define I2C_SLAVE_H
 
-#include <avr/io.h>
 #include <avr/interrupt.h>
+#include <avr/io.h>
 #include <util/twi.h>
 
 #include <inttypes.h>
 #include <stdbool.h>
 
+// The transmission just started
+#define I2C_SLAVE_TR_START true
+// The transmission is continuing
+#define I2C_SLAVE_TR_CONTINUES false
+
 /// Set the functions called when the slave is addressed
 /// @param receive called when the master sent data
-/// @param send called when the master requests data, put your data in TWDR (1 byte)
-void i2c_slave_setcallbacks(void (*receive)(uint8_t), void (*send)(bool));
+/// @param send called when the master requests data, put your data in TWDR (1
+/// byte), bool true if called at the start of a transmission
+void i2c_slave_setcallbacks(void (*receive)(uint8_t, bool), void (*send)(bool));
 
 /// Initialize the I²C slave interface. don't forget to call sei()
 /// @param address address the device will respond to.
-/// @param respond_to_gce true to respond to the general call address, false not to.
+/// @param respond_to_gce true to respond to the general call address
+/// to.
 void i2c_slave_start(uint8_t address, bool respond_to_gce);
 
 /// Disables the I²C slave interface

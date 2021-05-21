@@ -73,10 +73,9 @@ static inline i2c_status_t i2c_start(
 
 void i2c_set_timer_callback(uint16_t (*timer)()) { I2C_TIMEOUT_TIMER = timer; }
 
-void i2c_init(void)
-{
-    // set i2c rate
-    TWBR = TWBR_VALUE;
+void i2c_init(uint32_t i2c_freq)
+{ // set i2c rate
+    TWBR = (((F_CPU / i2c_freq) - 16) / 2);
 }
 
 i2c_status_t i2c_start_transmit(uint8_t slave_address, uint16_t timeout)
@@ -110,4 +109,4 @@ i2c_data_return_t i2c_receive(bool ack, uint16_t timeout)
     return TWDR;
 }
 
-void i2c_stop(void) { TWCR = (1 << TWINT) | (1 << TWEN) | (1 << TWSTO); }
+void i2c_stop(void) { TWCR = (1 << TWINT) | (1 << TWSTO) | (1 << TWEN); }

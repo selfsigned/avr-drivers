@@ -15,10 +15,10 @@
 */
 #include "i2c_slave.h"
 
-static void (*I2C_SLAVE_RECEIVE_FUNC)(uint8_t); // recv interrupt callback
+static void (*I2C_SLAVE_RECEIVE_FUNC)(uint8_t, bool); // recv interrupt callback
 static void (*I2C_SLAVE_SEND_FUNC)(bool); // send interrupt callback
 
-void i2c_slave_setcallbacks(void (*receive)(uint8_t), void (*send)(bool))
+void i2c_slave_setcallbacks(void (*receive)(uint8_t, bool), void (*send)(bool))
 {
     I2C_SLAVE_RECEIVE_FUNC = receive;
     I2C_SLAVE_SEND_FUNC = send;
@@ -44,16 +44,18 @@ ISR(TWI_vect)
     switch (TW_STATUS) {
 
     // receive data
+    case TW_SR_SLA_ACK:
+        I2C_SLAVE_RECEIVE_FUNC(TWDR, I2C_SLAVE_TR_START);
     case TW_SR_DATA_ACK:
-        I2C_SLAVE_RECEIVE_FUNC(TWDR);
+        I2C_SLAVE_RECEIVE_FUNC(TWDR, I2C_SLAVE_TR_CONTINUES);
         break;
 
     // send data
     case TW_ST_SLA_ACK:
-        I2C_SLAVE_SEND_FUNC(true);
+        I2C_SLAVE_SEND_FUNC(I2C_SLAVE_TR_START);
         break;
     case TW_ST_DATA_ACK:
-        I2C_SLAVE_SEND_FUNC(false);
+        I2C_SLAVE_SEND_FUNC(I2C_SLAVE_TR_CONTINUES);
         break;
 
     // handle errors

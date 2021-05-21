@@ -25,13 +25,6 @@
 #include <inttypes.h>
 #include <stdbool.h>
 
-/// default freq
-#ifndef I2C_MASTER_FREQ
-#define I2C_MASTER_FREQ 100000UL
-#endif
-
-#define TWBR_VALUE (((F_CPU / I2C_MASTER_FREQ) - 16) / 2)
-
 /// the value that triggers an infinite wait for ACK
 #define I2C_INFINITE_TIMEOUT 0
 
@@ -41,13 +34,18 @@ typedef uint16_t i2c_data_return_t;
 #define I2C_ERROR -1
 #define I2C_TIMEOUT -2
 
+#define I2C_ACK true
+#define I2C_NACK false
+
 /// Set the timer function
 /// @param timer called when a timestamp is requested or timeout is superior to
 /// I2C_INFINITE_TIMEOUT (0)
 void i2c_set_timer_callback(uint16_t (*timer)());
 
 /// Initialize the I²C interface in Master mode.
-void i2c_init(void);
+/// @param i2c_freq The transmission frequency, 100000UL is a good value to
+/// start with
+void i2c_init(uint32_t i2c_freq);
 
 /// Starts an I²C transaction as master, sending data
 /// @param slave_address the address of the slave device
@@ -64,8 +62,10 @@ i2c_status_t i2c_start_receive(uint8_t slave_address, uint16_t timeout);
 /// @param timeout delay after which the transmission fails
 i2c_status_t i2c_transmit(uint8_t data, uint16_t timeout);
 
-/// Read a single byte during an I²C transaction, Master receiver mode.
-/// @param ack true to ACKnowledge the transmission, false to NotACK.
+/// Read a single byte during an I²C transaction, Master receiver mode. Make
+/// sure to send a NACK read request at the end of the transmission!
+/// @param ack I2C_ACK (true) to ACKnowledge the transmission, I2C_NACK (false)
+/// not to.
 /// @return data read from the bus.
 i2c_data_return_t i2c_receive(bool ack, uint16_t timeout);
 
