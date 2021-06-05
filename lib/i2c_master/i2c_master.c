@@ -27,7 +27,7 @@
 
 typedef enum i2c_direction_e { I2C_TRANSMIT, I2C_RECEIVE } i2c_direction_t;
 
-static uint16_t (*I2C_TIMEOUT_TIMER)(); // timer reader function
+static uint32_t (*I2C_TIMEOUT_TIMER)(); // timer reader function
 
 static bool wait_on_twi(uint16_t timeout)
 {
@@ -71,11 +71,25 @@ static inline i2c_status_t i2c_start(
 
 // PUBLIC
 
-void i2c_set_timer_callback(uint16_t (*timer)()) { I2C_TIMEOUT_TIMER = timer; }
+void i2c_set_timer_callback(uint32_t (*timer)()) { I2C_TIMEOUT_TIMER = timer; }
 
 void i2c_init(uint32_t i2c_freq)
-{ // set i2c rate
+{
+    // set i2c rate
     TWBR = (((F_CPU / i2c_freq) - 16) / 2);
+
+    // pullup
+#if defined __AVR_ATmega32U4__ || defined __AVR_ATmega16U4__
+    PORTD |= 1 << PORTD0;
+    PORTD |= 1 << PORTD1;
+#elif defined __AVR_ATmega48P__ || defined __AVR_ATmega48A__                   \
+    || defined __AVR_ATmega48PA__ || defined __AVR_ATmega88A__                 \
+    || defined __AVR_ATmega88PA__ || defined __AVR_ATmega168A__                \
+    || defined __AVR_ATmega168PA__ || defined __AVR_ATmega328__                \
+    || defined __AVR_ATmega328P__ || defined __AVR_ATmega328PU__
+    PORTC |= 1 << PORTC4;
+    PORTC |= 1 << PORTC5;
+#endif
 }
 
 i2c_status_t i2c_start_transmit(uint8_t slave_address, uint16_t timeout)

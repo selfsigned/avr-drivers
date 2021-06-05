@@ -35,15 +35,14 @@
 #define I2C_SLAVE_TR_CONTINUES false
 
 /// Set the functions called when the slave is addressed
-/// @param receive called when the master sent data
+/// @param receive called when the master sent data, returns true if ack
 /// @param send called when the master requests data, put your data in TWDR (1
 /// byte), bool true if called at the start of a transmission
-void i2c_slave_setcallbacks(void (*receive)(uint8_t, bool), void (*send)(bool));
+void i2c_slave_setcallbacks(bool (*receive)(uint8_t, bool), void (*send)(bool));
 
 /// Initialize the I²C slave interface. don't forget to call sei()
 /// @param address address the device will respond to.
 /// @param respond_to_gce true to respond to the general call address
-/// to.
 void i2c_slave_start(uint8_t address, bool respond_to_gce);
 
 /// Disables the I²C slave interface

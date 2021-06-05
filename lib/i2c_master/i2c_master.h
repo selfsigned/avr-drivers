@@ -28,11 +28,12 @@
 /// the value that triggers an infinite wait for ACK
 #define I2C_INFINITE_TIMEOUT 0
 
-typedef uint16_t i2c_status_t;
-typedef uint16_t i2c_data_return_t;
+typedef int16_t i2c_status_t;
+typedef int16_t i2c_data_return_t;
 #define I2C_SUCCESS 0
 #define I2C_ERROR -1
 #define I2C_TIMEOUT -2
+#define I2C_NACK_RECV -3
 
 #define I2C_ACK true
 #define I2C_NACK false
@@ -40,7 +41,7 @@ typedef uint16_t i2c_data_return_t;
 /// Set the timer function
 /// @param timer called when a timestamp is requested or timeout is superior to
 /// I2C_INFINITE_TIMEOUT (0)
-void i2c_set_timer_callback(uint16_t (*timer)());
+void i2c_set_timer_callback(uint32_t (*timer)());
 
 /// Initialize the I²C interface in Master mode.
 /// @param i2c_freq The transmission frequency, 100000UL is a good value to

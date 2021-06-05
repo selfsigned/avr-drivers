@@ -15,10 +15,10 @@
 */
 #include "i2c_slave.h"
 
-static void (*I2C_SLAVE_RECEIVE_FUNC)(uint8_t, bool); // recv interrupt callback
+static bool (*I2C_SLAVE_RECEIVE_FUNC)(uint8_t, bool); // recv interrupt callback
 static void (*I2C_SLAVE_SEND_FUNC)(bool); // send interrupt callback
 
-void i2c_slave_setcallbacks(void (*receive)(uint8_t, bool), void (*send)(bool))
+void i2c_slave_setcallbacks(bool (*receive)(uint8_t, bool), void (*send)(bool))
 {
     I2C_SLAVE_RECEIVE_FUNC = receive;
     I2C_SLAVE_SEND_FUNC = send;
@@ -41,13 +41,15 @@ void i2c_slave_stop()
 
 ISR(TWI_vect)
 {
-    switch (TW_STATUS) {
+    bool ack = true;
 
+    switch (TW_STATUS) {
     // receive data
     case TW_SR_SLA_ACK:
-        I2C_SLAVE_RECEIVE_FUNC(TWDR, I2C_SLAVE_TR_START);
+        ack = I2C_SLAVE_RECEIVE_FUNC(TWDR, I2C_SLAVE_TR_START);
+        break;
     case TW_SR_DATA_ACK:
-        I2C_SLAVE_RECEIVE_FUNC(TWDR, I2C_SLAVE_TR_CONTINUES);
+        ack = I2C_SLAVE_RECEIVE_FUNC(TWDR, I2C_SLAVE_TR_CONTINUES);
         break;
 
     // send data
@@ -60,7 +62,7 @@ ISR(TWI_vect)
 
     // handle errors
     case TW_BUS_ERROR:
-        TWCR |= (1 << TWSTO) | (1 << TWINT);
+        TWCR = (1 << TWSTO) | (1 << TWINT);
         break;
 
     default:
@@ -69,4 +71,6 @@ ISR(TWI_vect)
 
     // execute, ACKnowledge
     TWCR |= (1 << TWINT) | (1 << TWEA);
+    // TWCR = (1 << TWEA) | (1 << TWEN) | (1 << TWIE) | (1 << TWINT)
+    // | (ack << TWEA);
 }
